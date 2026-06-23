@@ -10,29 +10,9 @@
 
 ## Шаг 2. Загрузить файлы проекта
 
-После создания репозитория у тебя будет страница с инструкциями. Сделай так:
-
-### Вариант A — через веб-интерфейс (проще всего):
-
 1. На странице репозитория нажми **"Add file" → "Upload files"**
 2. Перетащи ZIP-архив [`radio_player_android.zip`](radio_player_android.zip) в окно браузера
 3. Нажми **"Commit changes"**
-
-### Вариант B — через Git (если знаком с Git):
-
-```bash
-# Клонируем репозиторий
-git clone https://github.com/ТВОЙ_ЛОГИН/radio-player-android.git
-cd radio-player-android
-
-# Копируем файлы из проекта
-cp /путь/к/radio_player/android/* .
-
-# Заливаем на GitHub
-git add .
-git commit -m "Initial commit"
-git push
-```
 
 ## Шаг 3. Открыть Codespaces
 
@@ -41,29 +21,48 @@ git push
 3. Нажми **"Create codespace on main"**
 4. Подожди 1-2 минуты — откроется онлайн-VS Code
 
-## Шаг 4. Установить Buildozer
+## Шаг 4. Установить Python 3.11 и Buildozer
 
-В терминале Codespaces (внизу) выполни по очереди:
+**Важно:** В Codespaces по умолчанию Python 3.12, который несовместим с Pyjnius. Нужно использовать Python 3.11.
+
+В терминале Codespaces выполни:
 
 ```bash
-# Обновление пакетов
+# Делаем скрипт исполняемым и запускаем
+chmod +x setup_buildozer.sh
+bash setup_buildozer.sh
+```
+
+Или вручную:
+
+```bash
+# Установка Python 3.11
 sudo apt update -qq
+sudo apt install -y python3.11 python3.11-dev python3.11-venv
 
-# Установка системных зависимостей
-sudo apt install -y python3-pip git zip unzip openjdk-17-jdk libltdl-dev libffi-dev libssl-dev libtool libtool-bin autoconf automake
+# Создаём виртуальное окружение с Python 3.11
+python3.11 -m venv buildozer_env
+source buildozer_env/bin/activate
 
-# Установка Buildozer
-pip install buildozer==1.5.0 cython
+# Системные зависимости
+sudo apt install -y git zip unzip openjdk-17-jdk libltdl-dev libffi-dev libssl-dev libtool libtool-bin autoconf automake
+
+# Buildozer и Cython
+pip install --upgrade pip
+pip install buildozer==1.5.0 cython==0.29.36
 
 # Проверка
+python --version   # должно быть Python 3.11.x
 buildozer --version
 java -version
-python3 --version
 ```
 
 ## Шаг 5. Собрать APK
 
 ```bash
+# Убедись, что виртуальное окружение активно (должно быть (buildozer_env) в начале строки)
+# Если нет — выполни: source buildozer_env/bin/activate
+
 # Сборка (15-30 минут)
 yes | buildozer -v android debug
 ```
@@ -82,12 +81,6 @@ ls -la bin/*.apk
 2. Найди файл `RadioPlayer-1.0.0-*-debug.apk`
 3. Нажми правой кнопкой → **Download**
 
-Или через терминал:
-```bash
-# Установить gh CLI (если не установлен)
-# Или просто скачай через веб-интерфейс Codespaces
-```
-
 ## Шаг 7. Установить на эмулятор/телефон
 
 1. Перенеси APK на устройство (через USB, Telegram, Google Drive)
@@ -98,19 +91,20 @@ ls -la bin/*.apk
 
 ## Если сборка упадёт с ошибкой
 
-### Ошибка "Python 3.14 not compatible with Kivy 2.3.0"
+### Ошибка "undeclared name not builtin: long" (Pyjnius + Python 3.12)
 
-В [`buildozer.spec`](buildozer.spec) уже прописано:
+Это значит, что ты используешь Python 3.12. Решение:
+```bash
+# Установи Python 3.11 и создай виртуальное окружение
+sudo apt install -y python3.11 python3.11-dev python3.11-venv
+python3.11 -m venv buildozer_env
+source buildozer_env/bin/activate
+pip install buildozer==1.5.0 cython==0.29.36
+# После этого запусти сборку снова
 ```
-p4a.branch = v2024.01.21
-requirements = python3==3.11.5,kivy==2.3.0,kivymd==1.1.1,requests,urllib3
-```
-
-Если ошибка всё равно появляется — проверь, что эти строки не закомментированы.
 
 ### Ошибка "java not found"
 
-Выполни заново:
 ```bash
 sudo apt install -y openjdk-17-jdk
 ```

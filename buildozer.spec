@@ -15,9 +15,6 @@ version = 1
 # Версия для отображения (строка)
 version.name = 1.0.0
 
-# Регулярное выражение для извлечения версии из version.name
-version.regex = (\d+)
-
 # Главный файл
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,otf
