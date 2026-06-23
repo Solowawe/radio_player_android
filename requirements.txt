@@ -1,0 +1,18 @@
+# radio_player/android — Android-приложение радио-плеера (Kivy + KivyMD)
+#
+# Для сборки APK нужен Buildozer (Linux/macOS или WSL):
+#   pip install buildozer
+#   buildozer android debug
+#
+# Для тестирования на десктопе:
+#   pip install -r requirements.txt
+#   python main.py
+
+# Основные зависимости
+kivy==2.3.0
+kivymd==1.1.1
+requests
+urllib3
+
+# Для Android (устанавливаются Buildozer автоматически)
+# androidstorage4kivy  # для доступа к файлам через SAF
