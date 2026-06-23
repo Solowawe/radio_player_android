@@ -20,8 +20,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,otf
 
 # Зависимости (pip)
-# python3==3.11.5 — фиксируем версию Python (p4a v2024.01.21 использует 3.11.5)
-# Если изменить p4a.branch, нужно согласовать версию Python с той, что использует p4a
+# python3==3.11.5 — фиксируем Python 3.11.5 (совместим с Pyjnius)
 requirements = python3==3.11.5,kivy==2.3.0,kivymd==1.1.1,requests,urllib3
 
 # Ориентация экрана
@@ -56,11 +55,9 @@ android.sdk = 31
 android.ndk = 25b
 android.gradle_dependencies = androidx.media:media:1.6.0
 
-# python-for-android (p4a) — фиксируем версию v2024.01.21 (Python 3.11.5)
-# v2026.05.09 использует Python 3.14.2, который НЕСОВМЕСТИМ с Kivy 2.3.0
-# (Kivy 2.3.0 не поддерживает новый 6-аргументный _PyLong_AsByteArray в Python 3.14)
-p4a.branch = v2024.01.21
-p4a.setup_py = false
+# python-for-android (p4a)
+# Не фиксируем ветку — buildozer использует актуальную версию p4a
+# Python 3.11 фиксирован в requirements, p4a подберёт совместимую версию
 
 # Подпись APK
 android.allow_backup = true
@@ -107,7 +104,8 @@ bin_dir = ./bin
 [requirements]
 # Дополнительные требования для сборки
 # (устанавливаются через pip на хосте)
-hostpython3 = python3
+# Явно указываем Python 3.11, чтобы версия совпадала с requirements
+hostpython3 = python3.11
 hostpip = pip3
 
 [app:ios]
