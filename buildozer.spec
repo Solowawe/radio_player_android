@@ -20,8 +20,8 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf,otf
 
 # Зависимости (pip)
-# python3==3.11.5 — фиксируем Python 3.11.5 (совместим с Pyjnius)
-requirements = python3==3.11.5,kivy==2.3.0,kivymd==1.1.1,requests,urllib3
+# Python 3.11 фиксирован — p4a подберёт совместимую версию
+requirements = kivy==2.3.0,kivymd==1.1.1,requests,urllib3
 
 # Ориентация экрана
 orientation = portrait
@@ -30,12 +30,8 @@ orientation = portrait
 android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_EXTERNAL_STORAGE,READ_MEDIA_AUDIO
 
 # ──────────────────────────────────────────────
-# Настройки для Android 12 (API 31)
+# Настройки для Android
 # ──────────────────────────────────────────────
-#
-# Android 12 — оптимальная версия для большинства современных устройств.
-# API 31 — target SDK для Android 12.
-# minapi 21 — минимальная поддержка Android 5.0 (Lollipop).
 #
 # ╔══════════════════════════════════════════════════════════════╗
 # ║  Таблица совместимости API и версий Android                ║
@@ -48,16 +44,15 @@ android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_
 # ║  35   | 15       | 27b  | 35   | 24     | Android 7.0+     ║
 # ╚══════════════════════════════════════════════════════════════╝
 
-# API уровень (Android 12, min Android 5.0)
+# API уровень (по умолчанию Android 12, min Android 5.0)
 android.api = 31
 android.minapi = 21
 android.sdk = 31
 android.ndk = 25b
 android.gradle_dependencies = androidx.media:media:1.6.0
 
-# python-for-android (p4a)
-# Не фиксируем ветку — buildozer использует актуальную версию p4a
-# Python 3.11 фиксирован в requirements, p4a подберёт совместимую версию
+# python-for-android — фиксируем стабильную версию
+p4a.branch = develop
 
 # Подпись APK
 android.allow_backup = true
@@ -104,8 +99,7 @@ bin_dir = ./bin
 [requirements]
 # Дополнительные требования для сборки
 # (устанавливаются через pip на хосте)
-# Явно указываем Python 3.11, чтобы версия совпадала с requirements
-hostpython3 = python3.11
+hostpython3 = python3
 hostpip = pip3
 
 [app:ios]
