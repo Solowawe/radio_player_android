@@ -21,7 +21,7 @@ source.include_exts = py,png,jpg,kv,atlas,ttf,otf
 
 # Зависимости (pip)
 # Python 3.11 фиксирован — p4a подберёт совместимую версию
-requirements = kivy==2.3.0,kivymd==1.1.1,requests,urllib3
+requirements = kivy==2.3.0,kivymd==1.1.1,requests,urllib3,androidstorage4kivy
 
 # Ориентация экрана
 orientation = portrait
@@ -47,7 +47,6 @@ android.permissions = INTERNET,ACCESS_NETWORK_STATE,READ_EXTERNAL_STORAGE,WRITE_
 # API уровень (по умолчанию Android 12, min Android 5.0)
 android.api = 31
 android.minapi = 21
-android.sdk = 31
 android.ndk = 25b
 android.gradle_dependencies = androidx.media:media:1.6.0
 
