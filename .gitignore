@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Buildozer
+.buildozer/
+bin/
+*.spec
+
+# Android build artifacts
+android/*.apk
+android/*.zip
+android/logs.zip
+android/radio_player_android/*.apk
+android/radio_player_android/*.zip
+
+# Screenshots
+screenshots/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log

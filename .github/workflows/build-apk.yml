@@ -1,0 +1,153 @@
+name: Build Radio Player APK
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      android_api:
+        description: 'Android API level'
+        required: true
+        default: '33'
+        type: choice
+        options:
+          - '31'
+          - '33'
+          - '34'
+          - '35'
+      android_minapi:
+        description: 'Minimum Android API level'
+        required: true
+        default: '21'
+        type: choice
+        options:
+          - '21'
+          - '24'
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Free up disk space
+        run: |
+          sudo apt-get clean
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf /usr/local/share/boost
+          sudo rm -rf /opt/hostedtoolcache/CodeQL
+          df -h
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            git zip unzip openjdk-17-jdk \
+            libltdl-dev libffi-dev libssl-dev \
+            libtool libtool-bin autoconf automake \
+            ccache cmake \
+            python3-pip
+          echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+
+      - name: Install Buildozer and Cython
+        run: |
+          python -m pip install --upgrade pip
+          pip install buildozer==1.5.0 cython==0.29.36
+          pip install --upgrade setuptools wheel pybind11
+
+      - name: Configure buildozer.spec for GitHub Actions
+        run: |
+          ANDROID_API="${{ inputs.android_api || '33' }}"
+          ANDROID_MINAPI="${{ inputs.android_minapi || '21' }}"
+
+          sed -i "s/^android.api = .*/android.api = $ANDROID_API/" buildozer.spec
+          sed -i "s/^android.minapi = .*/android.minapi = $ANDROID_MINAPI/" buildozer.spec
+          sed -i "s/^android.archs = .*/android.archs = arm64-v8a/" buildozer.spec
+
+          echo "Configured: API=$ANDROID_API, minAPI=$ANDROID_MINAPI, archs=arm64-v8a"
+
+      - name: Build APK with Buildozer
+        id: build
+        continue-on-error: true
+        run: |
+          yes | buildozer -v android debug 2>&1 | tee buildozer.log
+
+      - name: Show buildozer.log summary
+        if: always()
+        run: |
+          echo "=== Buildozer log size ==="
+          wc -c buildozer.log
+          echo ""
+          echo "=== Last 80 lines of buildozer.log ==="
+          tail -80 buildozer.log
+          echo ""
+          echo "=== Checking for errors in log ==="
+          grep -i -E "(error|failed|exception|traceback|warning)" buildozer.log | tail -30
+
+      - name: Find and copy APK
+        if: always()
+        run: |
+          echo "=== Searching for APK files ==="
+          mkdir -p apk_output
+          
+          # Search in common locations
+          for dir in "." "/home/runner" "/home/runner/work" "/tmp"; do
+            echo "--- Searching $dir ---"
+            find "$dir" -name "*.apk" -type f 2>/dev/null || true
+          done
+          
+          echo ""
+          echo "=== Checking bin/ directory ==="
+          ls -la bin/ 2>/dev/null || echo "bin/ not found or empty"
+          
+          echo ""
+          echo "=== Checking .buildozer/ ==="
+          find .buildozer -name "*.apk" -type f 2>/dev/null || echo "no APK in .buildozer"
+          
+          echo ""
+          echo "=== buildozer.spec bin_dir ==="
+          grep bin_dir buildozer.spec
+          
+          echo ""
+          echo "=== Checking buildozer.log for errors ==="
+          if [ -f buildozer.log ]; then
+            echo "--- Last 30 lines ---"
+            tail -30 buildozer.log
+            echo ""
+            echo "--- Error summary ---"
+            grep -i -E "(error|exception|traceback|failed)" buildozer.log | tail -20 || echo "No critical errors found"
+          else
+            echo "buildozer.log not found"
+          fi
+          
+          # Copy any APK found
+          echo ""
+          echo "=== Copying APK files ==="
+          find /home/runner -name "*.apk" -type f -exec cp {} apk_output/ \; 2>/dev/null || true
+          find . -name "*.apk" -type f -exec cp {} apk_output/ \; 2>/dev/null || true
+          
+          echo ""
+          echo "=== APK output ==="
+          ls -la apk_output/ 2>/dev/null || echo "apk_output is empty"
+
+      - name: Upload APK as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: RadioPlayer-APK-${{ github.run_number }}
+          path: ./apk_output/
+          if-no-files-found: warn
+          retention-days: 30
