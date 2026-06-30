@@ -29,9 +29,10 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
+    # Buildozer.spec находится в android/radio_player_android/
     defaults:
       run:
-        working-directory: .
+        working-directory: android/radio_player_android
 
     steps:
       - name: Checkout repository
@@ -60,13 +61,20 @@ jobs:
             libtool libtool-bin autoconf automake \
             ccache cmake \
             python3-pip
+          # Используем Java 17
           echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
 
-      - name: Install Buildozer and Cython
+      - name: Install Buildozer
         run: |
           python -m pip install --upgrade pip
-          pip install buildozer==1.5.0 cython==0.29.36
+          pip install buildozer==1.5.0
           pip install --upgrade setuptools wheel pybind11
+
+      - name: Install Cython (fixed version for pyjnius compatibility)
+        run: |
+          # pyjnius требует Cython 0.29.x, не 3.x
+          pip install cython==0.29.36
+          cython --version
 
       - name: Configure buildozer.spec for GitHub Actions
         run: |
